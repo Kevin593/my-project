@@ -1,0 +1,11 @@
+region = "us-east-1"
+vpc_cidr_block = "10.0.0.0/16"
+availability_zones = ["us-east-1a", "us-east-1b"]
+cluster_name = "mi-cluster-eks"
+cluster_version = "1.28"
+instance_types = ["t3.medium"]
+desired_capacity = 3 # ¡Aquí defines el valor para desired_capacity!
+min_size = 2
+max_size = 5
+vpc_id = "vpc-062aa98982ebb9e49"
+subnet_ids = ["subnet-04f1ef8183e6af7ed", "subnet-05491ba91fe971f84" ]
