@@ -1,22 +1,28 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Checkout from "./pages/Checkout";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import "./styles/global.css";
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import VotingGrid from './components/VotingGrid';
+import ResultsPage from './components/ResultsPage';
+import './App.css';
 
-const App = () => {
+function App() {
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/checkout/:eventId" element={<Checkout />} />
-      </Routes>
-      <Footer />
+      <div className="app-container">
+        <header>
+          <nav>
+            <Link to="/" className="nav-link">Votar</Link>
+            <Link to="/resultados" className="nav-link">Resultados</Link>
+          </nav>
+        </header>
+        <main>
+          <Routes>
+            <Route path="/" element={<VotingGrid />} />
+            <Route path="/resultados" element={<ResultsPage />} />
+          </Routes>
+        </main>
+      </div>
     </Router>
   );
-};
+}
 
 export default App;

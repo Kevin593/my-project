@@ -1,0 +1,163 @@
+basePath: /api/v1
+definitions:
+  main.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  main.Option:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      svgColor:
+        type: string
+    type: object
+  main.Result:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      svgColor:
+        type: string
+      votes:
+        type: integer
+    type: object
+  main.SuccessResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: string
+    type: object
+  main.VoteRequest:
+    properties:
+      optionId:
+        type: string
+    required:
+    - optionId
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://www.example.com/support
+  description: API for a real-time voting platform
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Voting Platform API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: Check if the API is running
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.SuccessResponse'
+      summary: Health check endpoint
+      tags:
+      - health
+  /init-data:
+    post:
+      description: Create test voting options and reset vote counts
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.SuccessResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Initialize test data
+      tags:
+      - admin
+  /options:
+    get:
+      description: Retrieve all available voting options
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Option'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get all options
+      tags:
+      - options
+  /results:
+    get:
+      description: Retrieve the total votes for each option
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Result'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get voting results
+      tags:
+      - results
+  /vote:
+    post:
+      consumes:
+      - application/json
+      description: Increment the vote count for a specific option
+      parameters:
+      - description: Option ID to vote for
+        in: body
+        name: voteRequest
+        required: true
+        schema:
+          $ref: '#/definitions/main.VoteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Vote for an option
+      tags:
+      - votes
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

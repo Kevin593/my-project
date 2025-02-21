@@ -1,32 +1,58 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  mongo:
+  # MongoDB service
+  mongodb:
     image: mongo:latest
-    container_name: mongo
+    container_name: voting-mongodb
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - mongodb_data:/data/db
+    restart: unless-stopped
+    networks:
+      - voting-network
 
+  # Backend API service
   backend:
-    build: ./backend
-    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: voting-backend
     ports:
-      - "5000:5000"
+      - "8080:8080"
     environment:
-      - MONGO_URL=mongodb://mongo:27017/
+      - MONGODB_URI=mongodb://mongodb:27017
+      - PORT=8080
+      # APM configuration (optional)
+      - APM_SERVER_URL=${APM_SERVER_URL:-}
+      - APM_SERVICE_NAME=voting-platform-backend
+      - APM_ENVIRONMENT=development
     depends_on:
-      - mongo
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - voting-network
 
+  # Frontend service
   frontend:
-    build: ./frontend
-    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: voting-frontend
     ports:
       - "3000:3000"
     environment:
-      - REACT_APP_BACKEND_URL=http://backend:5000
+      - REACT_APP_API_URL=http://localhost:8080/api/v1
     depends_on:
       - backend
+    restart: unless-stopped
+    networks:
+      - voting-network
+
+networks:
+  voting-network:
+    driver: bridge
 
 volumes:
-  mongo-data:
+  mongodb_data:
