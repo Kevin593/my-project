@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: voting-front
+spec:
+  replicas: 1 # Número de réplicas
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: voting-front
+  template:
+    metadata:
+      labels:
+        app: voting-front
+    spec:
+      containers:
+          - name: voting-front
+            image: brosgarc/voting-front
+            ports:
+            - containerPort: 3000
+            env:
+              - name: REACT_APP_API_URL
+                value: "http://voting-back.default.svc.cluster.local:8080/api/v1"
+
+---
+# service-frontend.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: voting-front
+spec:
+  selector:
+    app: voting-front
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: LoadBalancer # O ClusterIP
