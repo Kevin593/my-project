@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: voting-db
+spec:
+  selector:
+    app: voting-db
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
