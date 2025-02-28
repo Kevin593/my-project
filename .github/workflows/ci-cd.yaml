@@ -1,0 +1,85 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  IMAGE_REPOSITORY_BACK: voting-back
+  IMAGE_REPOSITORY_FRONT: voting-front
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Configurar credenciales para AWS
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Login en Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Construir y subir imagen del backend
+      - name: Build and Push Backend Docker Image
+        working-directory: cloudProject/app/backend
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_BACK:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_BACK:latest
+
+      # Construir y subir imagen del frontend
+      - name: Build and Push Frontend Docker Image
+        working-directory: cloudProject/app/frontend
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT:latest .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT:latest
+
+      # Aplicar Terraform para infraestructura
+      - name: Terraform Init
+        working-directory: local/infra
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: local/infra
+        run: terraform plan
+
+      - name: Terraform Apply
+        working-directory: local/infra
+        run: terraform apply -auto-approve
+
+      # Desplegar Helm Charts
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+
+      - name: Upgrade Helm Chart for backend
+        working-directory: local/infra/voting-back
+        run: |
+          helm upgrade --install voting-back . \
+            --namespace default --wait \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_BACK \
+            --set image.tag=latest
+
+      - name: Upgrade Helm Chart for frontend
+        working-directory: local/infra/voting-front
+        run: |
+          helm upgrade --install voting-front . \
+            --namespace default --wait \
+            --set image.repository=${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT \
+            --set image.tag=latest
