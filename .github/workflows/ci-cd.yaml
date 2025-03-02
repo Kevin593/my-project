@@ -51,6 +51,10 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT:latest
 
+      # Instalar Terraform
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+
       # Aplicar Terraform para infraestructura
       - name: Terraform Init
         working-directory: local/infra
