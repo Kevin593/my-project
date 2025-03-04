@@ -24,7 +24,7 @@ terraform {
 
 provider "aws" {
   region                   = "us-east-1"
-  profile                  = "admin"
+  profile                  = "admin1"
   shared_credentials_files = ["C:\\Users\\usuario\\.aws\\credentials"]
   shared_config_files      = ["C:\\Users\\usuario\\.aws\\config"]
 }
