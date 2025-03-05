@@ -51,7 +51,8 @@ module "eks" {
 
   # Usar la VPC existente si ya existe, o la nueva si se crea
   vpc_id     = length(data.aws_vpc.existing.id) > 0 ? data.aws_vpc.existing.id : module.vpc[0].vpc_id
-  subnet_ids = length(data.aws_vpc.existing.id) > 0 ? data.aws_vpc.existing.private_subnets : module.vpc[0].private_subnets
+subnet_ids = length(data.aws_vpc.existing.id) > 0 ? data.aws_subnet.existing[*].id : module.vpc.private_subnets
+
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
