@@ -38,8 +38,8 @@ module "eks" {
     }
   }
 
-  vpc_id     = module.vpc[0].vpc_id  # Accediendo al primer (y único) módulo vpc
-  subnet_ids = module.vpc[0].private_subnets  # Accediendo a las subredes privadas del primer (y único) módulo vpc
+  vpc_id     = module.vpc.vpc_id  # Accediendo directamente a vpc_id sin índice
+  subnet_ids = module.vpc.private_subnets  # Accediendo directamente a private_subnets sin índice
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
   }
@@ -55,7 +55,6 @@ module "eks" {
       desired_size = var.desired_capacity
     }
   }
-
 }
 
 data "aws_iam_policy" "ebs_csi_policy" {
