@@ -51,6 +51,26 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT:latest .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_REPOSITORY_FRONT:latest
 
+      # Verificar y eliminar KMS Alias si ya existe
+      - name: Check and Delete KMS Alias if exists
+        run: |
+          if aws kms list-aliases --query "Aliases[?AliasName=='alias/eks/tfm-cluster']"; then
+            echo "KMS Alias exists. Deleting..."
+            aws kms delete-alias --alias-name alias/eks/tfm-cluster
+          else
+            echo "KMS Alias does not exist."
+          fi
+
+      # Verificar y eliminar CloudWatch Log Group si ya existe
+      - name: Check and Delete CloudWatch Log Group if exists
+        run: |
+          if aws logs describe-log-groups --log-group-name-prefix "/aws/eks/tfm-cluster/cluster" --query "logGroups[?logGroupName=='/aws/eks/tfm-cluster/cluster']"; then
+            echo "CloudWatch Log Group exists. Deleting..."
+            aws logs delete-log-group --log-group-name "/aws/eks/tfm-cluster/cluster"
+          else
+            echo "CloudWatch Log Group does not exist."
+          fi
+
       # Instalar Terraform
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
