@@ -1,10 +1,3 @@
-data "aws_vpc" "existing_vpc" {
-  filter {
-    name   = "cidr-block"
-    values = [var.vpc_cidr]
-  }
-}
-
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
@@ -27,8 +20,6 @@ module "vpc" {
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = 1
   }
-
-  count = length(data.aws_vpc.existing_vpc.id) > 0 ? 0 : 1
 }
 
 module "eks" {
@@ -47,11 +38,10 @@ module "eks" {
     }
   }
 
-  vpc_id     = module.vpc.vpc_id
-  subnet_ids = module.vpc.private_subnets # Asegurando uso de subredes públicas
+  vpc_id     = module.vpc[0].vpc_id  # Accediendo al primer (y único) módulo vpc
+  subnet_ids = module.vpc[0].private_subnets  # Accediendo a las subredes privadas del primer (y único) módulo vpc
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
-
   }
 
   eks_managed_node_groups = {
@@ -82,6 +72,7 @@ module "irsa-ebs-csi" {
   role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
+
 # ✅ Se debe definir aws-auth en otro bloque separado con 'kubectl'
 /*resource "kubernetes_config_map_v1_data" "aws_auth" {
   metadata {
